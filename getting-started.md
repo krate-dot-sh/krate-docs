@@ -64,12 +64,39 @@ krate stop <name>         # stop it
 
 ## 4. Run your own project
 
-If your project already has a devcontainer or a compose file, there is nothing
-to convert:
+If your project already has a compose file or a devcontainer, there is nothing
+to convert. Here is the whole thing end to end.
+
+Make a directory with a `compose.yml`:
+
+```yaml
+services:
+  cache:
+    image: redis:7-alpine
+```
+
+Then start it:
 
 ```bash
-cd ~/your-project
 krate up
+```
+
+```
+detected compose file: /path/to/your-project/compose.yml
+Started (1 services)
+  ✓ cache (192.168.64.40)
+```
+
+Each service gets its own microVM and its own IP on the krate network. Check it:
+
+```bash
+krate ps
+```
+
+```
+ID            NAME             IP                PORTS           STATUS
+------------------------------------------------------------------------
+wl-000001     env-0001/cache   192.168.64.40     -               > Running
 ```
 
 `krate up` looks for a config in the current directory and uses the first one it
@@ -79,58 +106,34 @@ finds, in this order:
 2. `krate.toml`
 3. `.devcontainer/devcontainer.json`
 
-Use `--file` to name one explicitly. When you are done:
+Use `--file` to name one explicitly.
+
+### Stopping it
 
 ```bash
-krate down
+krate env stop        # stop the environment, keep its state
+krate env destroy     # stop it and remove all state and caches
 ```
 
-## Workload types
-
-`krate run` defaults to `container`, but the same command runs four kinds of
-workload, each in its own microVM:
-
-| Type | What it is |
-|---|---|
-| `container` | an OCI image, the default |
-| `process` | a binary in a minimal Linux root filesystem |
-| `wasm` | a WebAssembly module under the WASI capability model |
-| `unikernel` | boots directly on the hypervisor, with no OS kernel at all |
-
-```bash
-krate run --type wasm my-module
-```
-
-They are listed roughly from most compatible to most restrictive. A container
-gives you a full Linux userland; a unikernel gives you the smallest attack
-surface.
-
-## Policy
-
-Isolation decides what a workload *can* reach. Policy decides what it is
-*allowed* to do, and krate enforces it in the daemon rather than asking the
-workload to behave.
-
-Scaffold one and look at what it generates:
-
-```bash
-krate policy init     # create a krate.policy file
-krate policy show     # the merged effective policy for this project
-krate policy lint     # check it before you rely on it
-```
-
-Policy is evaluated when a workload starts. On the Team tier an org's policy
-syncs to every machine, so a rule you set centrally applies everywhere without
-anyone opting in.
+Note that `krate down` does **not** stop the environment in the current build.
+It prints a pointer to `krate env stop`, which is the command that does the
+work.
 
 ## Where to go next
 
-- `krate <command> --help` works on every command and is the most current
-  reference, since it comes from the binary you have installed.
-- `krate info` whenever behavior surprises you. Most confusing situations turn
-  out to be a stale daemon or being logged out.
-- `krate werks` is a separate product for spec-driven agent builds. It runs on
-  krate and is documented separately.
+You have krate installed, a workload running, and your own project booting.
+Those are the next things worth learning, each its own topic:
+
+- **Workload types.** `krate run` defaults to a container, but the same command
+  runs processes, WebAssembly modules and unikernels, each in its own microVM
+  and each with a smaller attack surface than the last.
+- **Policy.** Isolation decides what a workload *can* reach. Policy decides what
+  it is *allowed* to do, enforced in the daemon rather than requested of the
+  workload. Start with `krate policy init`.
+- **werks.** A separate product for spec-driven agent builds that runs on krate.
+
+`krate <command> --help` works on every command and is the most current
+reference, since it comes from the binary you have installed.
 
 ## Troubleshooting
 
