@@ -47,7 +47,9 @@ krate run hello-krate
 ```
 
 That pulls a small image and boots it in its own microVM. You should see it
-print and exit within a second or so.
+print and exit in a few seconds. Most of that is image resolution and root
+filesystem preparation; the VM itself boots a kernel, runs the workload and
+powers off in about a second.
 
 What happened: krate fetched the image, created a VM with its own kernel, ran
 the workload inside it, and tore the VM down when the process exited. Nothing
