@@ -111,13 +111,12 @@ Use `--file` to name one explicitly.
 ### Stopping it
 
 ```bash
-krate env stop        # stop the environment, keep its state
+krate down            # stop the environment for this directory
 krate env destroy     # stop it and remove all state and caches
 ```
 
-Note that `krate down` does **not** stop the environment in the current build.
-It prints a pointer to `krate env stop`, which is the command that does the
-work.
+`krate env stop` does the same as `krate down`, and also takes an environment
+id so you can stop one from anywhere rather than from its directory.
 
 ## Where to go next
 
